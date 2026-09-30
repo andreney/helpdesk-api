@@ -9,7 +9,7 @@ class TicketCommentRepository
     /**
      * Cria um novo comentário.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): TicketComment
     {

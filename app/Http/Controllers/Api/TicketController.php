@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketStatusRequest;
+use App\Http\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Services\TicketService;
 use Illuminate\Http\JsonResponse;
@@ -25,36 +26,33 @@ class TicketController extends Controller
             $request->validated()
         );
 
-        return response()->json(
-            $ticket,
-            201
-        );
+        return (new TicketResource($ticket))
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
      * Lista os tickets.
      */
-    public function index(): JsonResponse
+    public function index()
     {
         $tickets = $this->ticketService->getAll();
 
-        return response()->json($tickets);
+        return TicketResource::collection($tickets);
     }
 
     /**
      * Exibe um ticket específico.
      */
-    public function show(int $id): JsonResponse
+    public function show(int $id): TicketResource
     {
         $ticket = $this->ticketService->findById($id);
 
         if (! $ticket) {
-            return response()->json([
-                'message' => 'Ticket não encontrado.',
-            ], 404);
+            abort(404, 'Ticket não encontrado.');
         }
 
-        return response()->json($ticket);
+        return new TicketResource($ticket);
     }
 
     /**

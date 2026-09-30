@@ -14,7 +14,13 @@ class TicketRepository
      */
     public function create(array $data): Ticket
     {
-        return Ticket::create($data);
+        $ticket = Ticket::create($data);
+
+        return $ticket->load([
+            'category',
+            'user',
+            'assignedTo',
+        ]);
     }
 
     /**

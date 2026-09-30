@@ -11,13 +11,12 @@ class TicketCommentService
 {
     public function __construct(
         private readonly TicketCommentRepository $ticketCommentRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Cria um comentário em um ticket.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(
         Ticket $ticket,
