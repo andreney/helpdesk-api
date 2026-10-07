@@ -2,7 +2,9 @@
 
 namespace App\Repositories;
 
+use App\Enums\UserRole;
 use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
 class TicketRepository
@@ -28,13 +30,19 @@ class TicketRepository
      *
      * @return Collection<int, Ticket>
      */
-    public function getAll(): Collection
+    public function getAll(User $user): Collection
     {
-        return Ticket::with([
+        $query = Ticket::with([
             'category',
             'user',
             'assignedTo',
-        ])->latest()->get();
+        ]);
+
+        if ($user->role === UserRole::USER) {
+            $query->where('user_id', $user->id);
+        }
+
+        return $query->latest()->get();
     }
 
     /**
@@ -53,10 +61,11 @@ class TicketRepository
     /**
      * Atualiza o status de um ticket.
      */
-    public function updateStatus(Ticket $ticket, string $status): Ticket
+    public function updateStatus(Ticket $ticket, string $status, $closedAt = null): Ticket
     {
         $ticket->update([
             'status' => $status,
+            'closed_at' => $closedAt,
         ]);
 
         return $ticket->refresh();

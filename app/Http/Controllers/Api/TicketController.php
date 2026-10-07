@@ -9,6 +9,9 @@ use App\Http\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Services\TicketService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Gate;
 
 class TicketController extends Controller
 {
@@ -34,9 +37,13 @@ class TicketController extends Controller
     /**
      * Lista os tickets.
      */
-    public function index()
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $tickets = $this->ticketService->getAll();
+        Gate::authorize('viewAny', Ticket::class);
+
+        $tickets = $this->ticketService->getAll(
+            $request->user()
+        );
 
         return TicketResource::collection($tickets);
     }
@@ -52,6 +59,8 @@ class TicketController extends Controller
             abort(404, 'Ticket não encontrado.');
         }
 
+        Gate::authorize('view', $ticket);
+
         return new TicketResource($ticket);
     }
 
@@ -62,6 +71,8 @@ class TicketController extends Controller
         UpdateTicketStatusRequest $request,
         Ticket $ticket
     ): JsonResponse {
+        Gate::authorize('updateStatus', $ticket);
+        
         $ticket = $this->ticketService->updateStatus(
             $ticket,
             $request->validated()['status']

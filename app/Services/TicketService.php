@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Enums\TicketStatus;
+use App\Exceptions\InvalidTicketStatusTransitionException;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Repositories\TicketRepository;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 
 class TicketService
 {
@@ -37,9 +39,9 @@ class TicketService
      *
      * @return Collection<int, Ticket>
      */
-    public function getAll(): Collection
+    public function getAll(User $user): Collection
     {
-        return $this->ticketRepository->getAll();
+        return $this->ticketRepository->getAll($user);
     }
 
     /**
@@ -55,9 +57,38 @@ class TicketService
      */
     public function updateStatus(Ticket $ticket, string $status): Ticket
     {
+        $currentStatus = $ticket->status;
+
+        $allowedTransitions = [
+            TicketStatus::OPEN->value => [
+                TicketStatus::IN_PROGRESS->value,
+            ],
+            TicketStatus::IN_PROGRESS->value => [
+                TicketStatus::WAITING->value,
+                TicketStatus::CLOSED->value,
+            ],
+            TicketStatus::WAITING->value => [
+                TicketStatus::IN_PROGRESS->value,
+            ],
+            TicketStatus::CLOSED->value => [],
+        ];
+
+        if (! in_array(
+            $status,
+            $allowedTransitions[$currentStatus->value],
+            true
+        )) {
+            throw new InvalidTicketStatusTransitionException();
+        }
+
+        $closedAt = $status === TicketStatus::CLOSED->value
+            ? now()
+            : null;
+
         return $this->ticketRepository->updateStatus(
             $ticket,
-            $status
+            $status,
+            $closedAt
         );
     }
 }
