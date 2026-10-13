@@ -47,7 +47,7 @@ Autenticação por tokens, controle de acesso por perfil, tickets, comentários 
 
 ## 📋 Pré-requisitos
 
-- PHP 8.4 ou superior
+- PHP 8.3 ou superior
 - [Composer](https://getcomposer.org/)
 - MySQL em execução e um banco de dados criado para o projeto
 
