@@ -39,7 +39,7 @@ Autenticação por tokens, controle de acesso por perfil, tickets, comentários 
 
 | Camada         | Tecnologia                                      |
 | -------------- | ----------------------------------------------- |
-| Linguagem      | PHP 8.4+                                        |
+| Linguagem      | PHP 8.3+                                        |
 | Framework      | Laravel 13                                      |
 | Banco de dados | MySQL                                           |
 | Autenticação   | Laravel Sanctum                                 |
