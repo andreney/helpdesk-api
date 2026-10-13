@@ -82,4 +82,16 @@ class TicketPolicy
     {
         return false;
     }
+
+    /**
+     * Determina se o usuário pode comentar no ticket.
+     */
+    public function createComment(User $user, Ticket $ticket): bool
+    {
+        if (in_array($user->role, [UserRole::ADMIN, UserRole::AGENT], true)) {
+            return true;
+        }
+
+        return $ticket->user_id === $user->id;
+    }
 }

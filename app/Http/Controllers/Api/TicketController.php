@@ -72,7 +72,7 @@ class TicketController extends Controller
         Ticket $ticket
     ): JsonResponse {
         Gate::authorize('updateStatus', $ticket);
-        
+
         $ticket = $this->ticketService->updateStatus(
             $ticket,
             $request->validated()['status']

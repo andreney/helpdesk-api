@@ -1,0 +1,181 @@
+# Endpoints — Helpdesk API
+
+Base local: http://127.0.0.1:8000
+
+Todas as rotas, exceto POST /api/login, exigem um token Sanctum no cabeçalho:
+
+    Authorization: Bearer SEU_TOKEN
+
+## Resumo das rotas
+
+| Método | Rota | Autenticação | Permissão |
+|---|---|---|---|
+| POST | /api/login | Não | Credenciais válidas |
+| GET | /api/tickets | Sim | USER vê os próprios; AGENT e ADMIN veem todos |
+| POST | /api/tickets | Sim | Todos os perfis |
+| GET | /api/tickets/{id} | Sim | USER vê o próprio; AGENT e ADMIN veem qualquer |
+| PATCH | /api/tickets/{ticket}/status | Sim | AGENT e ADMIN |
+| POST | /api/tickets/{ticket}/comments | Sim | USER no próprio ticket; AGENT e ADMIN em qualquer |
+
+## POST /api/login
+
+Autentica o usuário e retorna um token Bearer.
+
+Payload:
+
+    {
+      "email": "usuario@example.com",
+      "password": "senha"
+    }
+
+Resposta 200:
+
+    {
+      "token": "TOKEN_EMITIDO",
+      "token_type": "Bearer",
+      "user": {
+        "id": 1,
+        "name": "Usuário",
+        "email": "usuario@example.com",
+        "role": 1
+      }
+    }
+
+Respostas de erro:
+
+- 401: email ou senha incorretos.
+- 422: email ou senha ausente ou inválido.
+
+## GET /api/tickets
+
+Lista tickets. USER recebe somente os tickets que abriu. AGENT e ADMIN recebem tickets de todos os usuários.
+
+Resposta 200:
+
+    {
+      "data": [
+        {
+          "id": 1,
+          "title": "Computador não inicia",
+          "status": "OPEN"
+        }
+      ]
+    }
+
+Sem tickets, data é um array vazio.
+
+Resposta de erro:
+
+- 401: token ausente ou inválido.
+
+## POST /api/tickets
+
+Cria um ticket para o usuário autenticado. O campo user_id não deve ser enviado; a API define o solicitante com base no token.
+
+Payload:
+
+    {
+      "category_id": 1,
+      "title": "Computador não inicia",
+      "description": "O computador apresenta erro ao iniciar.",
+      "priority": "HIGH"
+    }
+
+Regras atuais:
+
+- category_id deve ser um inteiro correspondente a uma categoria existente.
+- title é obrigatório, texto e limitado a 150 caracteres.
+- description é obrigatório e deve ser texto.
+- priority aceita LOW, MEDIUM, HIGH ou URGENT.
+- O novo ticket começa em OPEN.
+
+Resposta 201: objeto do ticket dentro de data, com os dados da categoria e do solicitante.
+
+Respostas de erro:
+
+- 401: token ausente ou inválido.
+- 422: campo obrigatório ou inválido.
+
+Observação: a API ainda não recusa categorias inativas. Essa regra está definida no documento de regras de negócio, mas não foi aplicada à validação atual.
+
+## GET /api/tickets/{id}
+
+Retorna os dados de um ticket, incluindo comentários e autores.
+
+Resposta 200: objeto do ticket dentro de data.
+
+Respostas de erro:
+
+- 401: token ausente ou inválido.
+- 403: USER tenta acessar ticket de outra pessoa.
+- 404: ticket inexistente.
+
+## PATCH /api/tickets/{ticket}/status
+
+Altera o status do ticket. Apenas AGENT e ADMIN podem executar a operação.
+
+Payload:
+
+    {
+      "status": "IN_PROGRESS"
+    }
+
+Transições permitidas:
+
+| De | Para |
+|---|---|
+| OPEN | IN_PROGRESS |
+| IN_PROGRESS | WAITING ou CLOSED |
+| WAITING | IN_PROGRESS |
+| CLOSED | Nenhum |
+
+Ao mudar para CLOSED, closed_at é preenchido. Nas outras transições permitidas, permanece nulo.
+
+Resposta 200: objeto do ticket atualizado.
+
+Respostas de erro:
+
+- 401: token ausente ou inválido.
+- 403: perfil sem permissão.
+- 404: ticket inexistente.
+- 422: status desconhecido ou transição não permitida.
+
+## POST /api/tickets/{ticket}/comments
+
+Adiciona um comentário ao ticket. O autor é sempre o usuário autenticado e o ticket é determinado pela rota; user_id e ticket_id enviados no payload são ignorados.
+
+Payload:
+
+    {
+      "comment": "Já reiniciei o computador, mas o problema continua."
+    }
+
+Resposta 201:
+
+    {
+      "data": {
+        "id": 1,
+        "comment": "Já reiniciei o computador, mas o problema continua.",
+        "user": {
+          "id": 1,
+          "name": "Usuário"
+        }
+      }
+    }
+
+Respostas de erro:
+
+- 401: token ausente ou inválido.
+- 403: USER tenta comentar no ticket de outra pessoa.
+- 404: ticket inexistente.
+- 422: comentário ausente ou não textual.
+
+## Formato geral das respostas de erro
+
+A API usa códigos HTTP para indicar o resultado. Em particular, a resposta 403 de autorização contém:
+
+    {
+      "message": "Você não tem permissão para realizar esta ação."
+    }
+
+As respostas 422 contêm os erros de validação ou a mensagem da regra de negócio que recusou a transição.

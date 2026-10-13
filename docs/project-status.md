@@ -1,88 +1,63 @@
 # Helpdesk API: Status do Projeto
 
-API de helpdesk construída com Laravel, autenticação via Sanctum e controle de acesso por perfil (roles) com Policies.
+API REST de suporte construída com Laravel 13, PHP 8.4 e MySQL. A autenticação usa Laravel Sanctum; as permissões são controladas por policies.
 
 ## Implementado
 
-- Autenticação via Laravel Sanctum
-- Usuários com roles: `ADMIN`, `AGENT` e `USER`
-- CRUD inicial de Tickets
-  - Criação de tickets
-  - Listagem com regra por perfil
-  - Visualização individual protegida por `TicketPolicy`
-- Comentários de tickets
-- Tratamento padronizado de erro 403 (`AccessDeniedHttpException`) em rotas de API
+- Login com emissão de token Bearer.
+- Perfis USER, AGENT e ADMIN.
+- Criação de tickets com validação de categoria existente, título, descrição e prioridade.
+- Listagem: USER vê somente os próprios tickets; AGENT e ADMIN veem todos.
+- Visualização: USER vê somente os próprios tickets; AGENT e ADMIN podem ver qualquer ticket.
+- Alteração de status por AGENT e ADMIN, respeitando a matriz de transições.
+- Comentários: USER comenta somente nos próprios tickets; AGENT e ADMIN podem comentar em qualquer ticket.
+- Respostas JSON para criação, listagem, visualização e comentários.
 
-## Regras de acesso atuais
+## Status permitidos
 
-| Ação                     | ADMIN | AGENT | USER                  |
-|--------------------------|:-----:|:-----:|:---------------------:|
-| Criar ticket             |  Sim  |  Sim  | Sim                   |
-| Listar tickets           | Todos | Todos | Apenas os seus        |
-| Visualizar ticket        | Todos | Todos | Apenas os seus        |
+| Status atual | Próximos status permitidos |
+|---|---|
+| OPEN | IN_PROGRESS |
+| IN_PROGRESS | WAITING, CLOSED |
+| WAITING | IN_PROGRESS |
+| CLOSED | Nenhum |
 
-> Um `USER` que tentar acessar o ticket de outra pessoa recebe **403**. Esse é o comportamento esperado da `TicketPolicy::view`.
+Ao encerrar um ticket, closed_at é preenchido. Nas demais transições permitidas, permanece nulo.
 
-## Tratamento de erros
+## Rotas implementadas
 
-O 403 é tratado em `bootstrap/app.php`. O Laravel converte `AuthorizationException` em `AccessDeniedHttpException` **antes** de chamar os callbacks de `render()`, então o handler deve capturar este último:
+| Método | Rota | Acesso |
+|---|---|---|
+| POST | /api/login | Público |
+| GET | /api/tickets | Autenticado |
+| POST | /api/tickets | Autenticado |
+| GET | /api/tickets/{id} | Autenticado e autorizado pela policy |
+| PATCH | /api/tickets/{ticket}/status | ADMIN ou AGENT |
+| POST | /api/tickets/{ticket}/comments | USER dono do ticket, ADMIN ou AGENT |
 
-```php
-->withExceptions(function (Exceptions $exceptions): void {
-    $exceptions->shouldRenderJsonWhen(
-        fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
-    );
+Payloads, exemplos e respostas estão em [api-endpoints.md](api-endpoints.md).
 
-    $exceptions->render(function (AccessDeniedHttpException $e, Request $request) {
-        return response()->json([
-            'message' => 'Você não tem permissão para realizar esta ação.',
-        ], 403);
-    });
-})
-```
+## Testes automatizados
 
-Resposta esperada:
+A suíte usa Pest e cobre os fluxos HTTP de autenticação, criação/listagem/visualização de tickets, status e comentários.
 
-```json
-{
-    "message": "Você não tem permissão para realizar esta ação."
-}
-```
+Última execução registrada em 13/10/2026: 57 testes passaram, com 187 assertions.
 
-## Próximos passos
+Para executar novamente:
 
-### 1. Autorização de alteração de status
-- Permitir alterar o status apenas para `ADMIN` e `AGENT`
-- Criar o método `updateStatus` na `TicketPolicy`
-- Usar `Gate::authorize('updateStatus', $ticket)` no controller
-- Validar as transições permitidas (ex.: `open` → `in_progress` → `resolved` → `closed`) em um Form Request ou Enum
+    php artisan test --compact
 
-### 2. Autorização complementar (lacunas a definir)
-- **Atualizar ticket** (título/descrição): quem pode? (sugestão: dono enquanto o ticket estiver aberto, ADMIN sempre)
-- **Excluir ticket**: restringir a `ADMIN` (ou usar `SoftDeletes`)
-- **Comentários**: criar `CommentPolicy` garantindo que o `USER` só comente em tickets que pode visualizar
-- **Atribuição de agente** (`assigned_to`): definir se entra no escopo
+## Pontos ainda não implementados ou a decidir
 
-### 3. Testes automatizados
-Usar Feature Tests (Pest ou PHPUnit) com `Sanctum::actingAs()`:
-- `USER` visualiza o próprio ticket → 200
-- `USER` visualiza ticket de outro → 403
-- `AGENT` e `ADMIN` visualizam qualquer ticket → 200
-- `USER` lista e vê apenas os seus tickets
-- `USER` tenta alterar status → 403
-- `AGENT`/`ADMIN` alteram status → 200
-- Ticket inexistente → 404
-- Requisição sem token → 401
+- A regra definida de impedir tickets em categorias inativas ainda não está aplicada na validação de criação; hoje é verificado se a categoria existe.
+- Edição e exclusão de tickets não possuem rotas.
+- Não há endpoints de administração de categorias ou usuários.
+- Atribuição de agente e filtros/paginação da listagem ainda não estão disponíveis.
+- A suíte não tem workflow de CI no GitHub Actions.
 
-### 4. Documentação dos endpoints
-- Documentar rotas, parâmetros, exemplos de resposta e códigos de erro (401, 403, 404, 422)
-- Opções: Scramble (gera OpenAPI automaticamente a partir do código), L5-Swagger ou coleção do Postman/Insomnia exportada
+## Documentos relacionados
 
-## Melhorias sugeridas
-
-- Padronizar as respostas de erro também para 401, 404 e 422 no mesmo formato JSON
-- Criar factories e seeders com um usuário de cada role para facilitar testes manuais
-- Evitar comparação com `===` entre IDs de tipos diferentes; garantir os casts nos models
-- Manter o cast `'role' => UserRole::class` no model `User`
-- Filtrar a listagem por perfil no **service/query** (`where('user_id', ...)` para `USER`), sem depender apenas da Policy
-- Adicionar paginação na listagem de tickets
+- [Arquitetura](architecture.md)
+- [Regras de negócio](business-rules.md)
+- [Banco de dados](database.md)
+- [Endpoints da API](api-endpoints.md)

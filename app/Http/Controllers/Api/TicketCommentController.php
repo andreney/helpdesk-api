@@ -8,6 +8,7 @@ use App\Http\Resources\TicketCommentResource;
 use App\Models\Ticket;
 use App\Services\TicketCommentService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class TicketCommentController extends Controller
 {
@@ -22,6 +23,8 @@ class TicketCommentController extends Controller
         StoreTicketCommentRequest $request,
         Ticket $ticket
     ): JsonResponse {
+        Gate::authorize('createComment', $ticket);
+
         $comment = $this->ticketCommentService->create(
             $ticket,
             $request->user(),

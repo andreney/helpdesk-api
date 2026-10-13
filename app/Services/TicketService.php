@@ -8,7 +8,6 @@ use App\Models\Ticket;
 use App\Models\User;
 use App\Repositories\TicketRepository;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\Request;
 
 class TicketService
 {
@@ -78,7 +77,7 @@ class TicketService
             $allowedTransitions[$currentStatus->value],
             true
         )) {
-            throw new InvalidTicketStatusTransitionException();
+            throw new InvalidTicketStatusTransitionException;
         }
 
         $closedAt = $status === TicketStatus::CLOSED->value

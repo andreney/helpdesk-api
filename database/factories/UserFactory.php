@@ -13,12 +13,12 @@ use Illuminate\Support\Str;
 class UserFactory extends Factory
 {
     /**
-     * The current password being used by the factory.
+     * A senha atual utilizada pela factory.
      */
     protected static ?string $password;
 
     /**
-     * Define the model's default state.
+     * Define o estado padrão da model.
      *
      * @return array<string, mixed>
      */
@@ -34,7 +34,7 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * Indica que o endereço de e-mail da model deve ser marcado como não verificado.
      */
     public function unverified(): static
     {
