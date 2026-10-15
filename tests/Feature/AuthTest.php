@@ -114,6 +114,24 @@ test('login rejeita senha incorreta para usuário existente', function () {
         ]);
 });
 
+test('bloqueia requisições de login após exceder o limite do rate limit', function () {
+    // 1 a 5: Executa 5 tentativas seguidas que atingem o limite máximo permitido
+    foreach (range(1, 5) as $attempt) {
+        $this->postJson('/api/v1/login', [
+            'email' => 'inexistente@helpdesk.test',
+            'password' => 'senha-incorreta',
+        ]);
+    }
+
+    // 6ª tentativa: Deve ser bloqueada pelo middleware throttle
+    $response = $this->postJson('/api/v1/login', [
+        'email' => 'inexistente@helpdesk.test',
+        'password' => 'senha-incorreta',
+    ]);
+
+    $response->assertStatus(429);
+});
+
 test('usuário autenticado pode realizar logout', function () {
     $user = User::factory()->create();
     $token = $user->createToken('api-token')->plainTextToken;
