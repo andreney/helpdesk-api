@@ -47,6 +47,8 @@ Respostas de erro:
 - 401: email ou senha incorretos.
 - 422: email ou senha ausente ou inválido.
 
+Os tokens Bearer expiram após 60 minutos por padrão. Esse prazo pode ser alterado pela variável de ambiente `SANCTUM_EXPIRATION`, cujo valor é expresso em minutos. Depois da expiração, as rotas protegidas recusam o token e retornam 401; é necessário fazer login novamente para obter outro.
+
 ## POST /api/v1/logout
 
 Encerra a sessão revogando somente o token Sanctum enviado no cabeçalho `Authorization`. Outros tokens do mesmo usuário permanecem válidos.
