@@ -11,7 +11,7 @@ test('usuário pode realizar login com credenciais válidas', function () {
         'password' => Hash::make('password'),
     ]);
 
-    $response = $this->postJson('/api/login', [
+    $response = $this->postJson('/api/v1/login', [
         'email' => $user->email,
         'password' => 'password',
     ]);
@@ -29,7 +29,7 @@ test('usuário pode realizar login com credenciais válidas', function () {
 });
 
 test('usuário não pode realizar login com credenciais inválidas', function () {
-    $response = $this->postJson('/api/login', [
+    $response = $this->postJson('/api/v1/login', [
         'email' => 'inexistente@helpdesk.test',
         'password' => 'senha-incorreta',
     ]);
@@ -46,7 +46,7 @@ test('token de login permite acessar uma rota protegida', function () {
         'password' => Hash::make('password'),
     ]);
 
-    $loginResponse = $this->postJson('/api/login', [
+    $loginResponse = $this->postJson('/api/v1/login', [
         'email' => $user->email,
         'password' => 'password',
     ]);
@@ -57,7 +57,7 @@ test('token de login permite acessar uma rota protegida', function () {
 
     $response = $this
         ->withHeader('Authorization', 'Bearer '.$token)
-        ->getJson('/api/tickets');
+        ->getJson('/api/v1/tickets');
 
     $response
         ->assertOk()
@@ -65,7 +65,7 @@ test('token de login permite acessar uma rota protegida', function () {
 });
 
 test('login exige email e senha', function () {
-    $response = $this->postJson('/api/login', []);
+    $response = $this->postJson('/api/v1/login', []);
 
     $response
         ->assertUnprocessable()
@@ -76,7 +76,7 @@ test('login exige email e senha', function () {
 });
 
 test('login rejeita email em formato inválido', function () {
-    $response = $this->postJson('/api/login', [
+    $response = $this->postJson('/api/v1/login', [
         'email' => 'email-invalido',
         'password' => 'password',
     ]);
@@ -87,7 +87,7 @@ test('login rejeita email em formato inválido', function () {
 });
 
 test('login rejeita senha que não seja texto', function () {
-    $response = $this->postJson('/api/login', [
+    $response = $this->postJson('/api/v1/login', [
         'email' => 'usuario@helpdesk.test',
         'password' => 123,
     ]);
@@ -102,7 +102,7 @@ test('login rejeita senha incorreta para usuário existente', function () {
         'password' => Hash::make('senha-correta'),
     ]);
 
-    $response = $this->postJson('/api/login', [
+    $response = $this->postJson('/api/v1/login', [
         'email' => $user->email,
         'password' => 'senha-incorreta',
     ]);
@@ -114,13 +114,31 @@ test('login rejeita senha incorreta para usuário existente', function () {
         ]);
 });
 
+test('bloqueia requisições de login após exceder o limite do rate limit', function () {
+    // 1 a 5: Executa 5 tentativas seguidas que atingem o limite máximo permitido
+    foreach (range(1, 5) as $attempt) {
+        $this->postJson('/api/v1/login', [
+            'email' => 'inexistente@helpdesk.test',
+            'password' => 'senha-incorreta',
+        ]);
+    }
+
+    // 6ª tentativa: Deve ser bloqueada pelo middleware throttle
+    $response = $this->postJson('/api/v1/login', [
+        'email' => 'inexistente@helpdesk.test',
+        'password' => 'senha-incorreta',
+    ]);
+
+    $response->assertStatus(429);
+});
+
 test('usuário autenticado pode realizar logout', function () {
     $user = User::factory()->create();
     $token = $user->createToken('api-token')->plainTextToken;
 
     $response = $this
         ->withHeader('Authorization', 'Bearer '.$token)
-        ->postJson('/api/logout');
+        ->postJson('/api/v1/logout');
 
     $response
         ->assertOk()
@@ -132,7 +150,20 @@ test('usuário autenticado pode realizar logout', function () {
 });
 
 test('logout sem autenticação retorna 401', function () {
-    $this->postJson('/api/logout')->assertUnauthorized();
+    $this->postJson('/api/v1/logout')
+        ->assertUnauthorized()
+        ->assertExactJson([
+            'message' => 'Não autenticado.',
+        ]);
+});
+
+test('logout sem autenticação e sem header Accept retorna 401 e não 500', function () {
+    // Reproduz o cenário do Postman que gerava "Route [login] not defined"
+    $this->post('/api/v1/logout')
+        ->assertUnauthorized()
+        ->assertExactJson([
+            'message' => 'Não autenticado.',
+        ]);
 });
 
 test('logout revoga apenas o token usado na requisição', function () {
@@ -142,7 +173,7 @@ test('logout revoga apenas o token usado na requisição', function () {
 
     $this
         ->withHeader('Authorization', 'Bearer '.$tokenAtual)
-        ->postJson('/api/logout')
+        ->postJson('/api/v1/logout')
         ->assertOk();
 
     $this->assertDatabaseCount('personal_access_tokens', 1);
@@ -157,20 +188,20 @@ test('token revogado no logout não acessa mais rotas protegidas', function () {
         'password' => Hash::make('password'),
     ]);
 
-    $token = $this->postJson('/api/login', [
+    $token = $this->postJson('/api/v1/login', [
         'email' => $user->email,
         'password' => 'password',
     ])->json('token');
 
     $this
         ->withHeader('Authorization', 'Bearer '.$token)
-        ->postJson('/api/logout')
+        ->postJson('/api/v1/logout')
         ->assertOk();
 
     $this->app['auth']->forgetGuards();
 
     $this
         ->withHeader('Authorization', 'Bearer '.$token)
-        ->getJson('/api/tickets')
+        ->getJson('/api/v1/tickets')
         ->assertUnauthorized();
 });

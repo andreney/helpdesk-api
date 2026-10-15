@@ -102,7 +102,7 @@ Exemplo do fluxo básico: autenticar e criar um ticket.
 **Login**
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/login \
+curl -X POST http://127.0.0.1:8000/api/v1/login \
   -H "Accept: application/json" \
   -H "Content-Type: application/json" \
   -d '{"email": "usuario@exemplo.com", "password": "senha"}'
@@ -111,7 +111,7 @@ curl -X POST http://127.0.0.1:8000/api/login \
 **Criar um ticket** (usando o token recebido)
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/tickets \
+curl -X POST http://127.0.0.1:8000/api/v1/tickets \
   -H "Accept: application/json" \
   -H "Authorization: Bearer SEU_TOKEN" \
   -H "Content-Type: application/json" \

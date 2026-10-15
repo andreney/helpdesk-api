@@ -22,7 +22,7 @@ test('usuário comum lista somente os próprios tickets', function () {
 
     Sanctum::actingAs($user);
 
-    $response = $this->getJson('/api/tickets');
+    $response = $this->getJson('/api/v1/tickets');
 
     $response
         ->assertOk()
@@ -45,7 +45,7 @@ test('administrador e agente listam tickets de todos os usuários', function (Us
 
     Sanctum::actingAs($user);
 
-    $response = $this->getJson('/api/tickets');
+    $response = $this->getJson('/api/v1/tickets');
 
     $response->assertOk()->assertJsonCount(2, 'data');
 
@@ -67,7 +67,7 @@ test('administrador e agente listam tickets de todos os usuários', function (Us
 ]);
 
 test('usuário não autenticado não pode listar tickets', function () {
-    $response = $this->getJson('/api/tickets');
+    $response = $this->getJson('/api/v1/tickets');
 
     $response->assertUnauthorized();
 });

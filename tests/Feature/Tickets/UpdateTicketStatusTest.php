@@ -22,7 +22,7 @@ test('agente pode iniciar o atendimento de um ticket aberto', function () {
     Sanctum::actingAs($agent);
 
     $response = $this->patchJson(
-        "/api/tickets/{$ticket->id}/status",
+        "/api/v1/tickets/{$ticket->id}/status",
         ['status' => TicketStatus::IN_PROGRESS->value]
     );
 
@@ -48,7 +48,7 @@ test('não permite fechar diretamente um ticket aberto', function () {
     Sanctum::actingAs($agent);
 
     $response = $this->patchJson(
-        "/api/tickets/{$ticket->id}/status",
+        "/api/v1/tickets/{$ticket->id}/status",
         ['status' => TicketStatus::CLOSED->value]
     );
 
@@ -78,7 +78,7 @@ test('agente pode encerrar ticket em atendimento e registrar a data de encerrame
     Sanctum::actingAs($agent);
 
     $response = $this->patchJson(
-        "/api/tickets/{$ticket->id}/status",
+        "/api/v1/tickets/{$ticket->id}/status",
         ['status' => TicketStatus::CLOSED->value]
     );
 
@@ -113,7 +113,7 @@ test('permite transições de status válidas', function (
     Sanctum::actingAs($agent);
 
     $response = $this->patchJson(
-        "/api/tickets/{$ticket->id}/status",
+        "/api/v1/tickets/{$ticket->id}/status",
         ['status' => $newStatus->value]
     );
 
@@ -151,7 +151,7 @@ test('bloqueia transições de status inválidas', function (
     Sanctum::actingAs($agent);
 
     $response = $this->patchJson(
-        "/api/tickets/{$ticket->id}/status",
+        "/api/v1/tickets/{$ticket->id}/status",
         ['status' => $newStatus->value]
     );
 
@@ -188,7 +188,7 @@ test('usuário comum não pode alterar o status de um ticket', function () {
     Sanctum::actingAs($user);
 
     $response = $this->patchJson(
-        "/api/tickets/{$ticket->id}/status",
+        "/api/v1/tickets/{$ticket->id}/status",
         ['status' => TicketStatus::IN_PROGRESS->value]
     );
 
@@ -218,7 +218,7 @@ test('administrador pode alterar o status de um ticket', function () {
     Sanctum::actingAs($admin);
 
     $response = $this->patchJson(
-        "/api/tickets/{$ticket->id}/status",
+        "/api/v1/tickets/{$ticket->id}/status",
         ['status' => TicketStatus::IN_PROGRESS->value]
     );
 
@@ -240,7 +240,7 @@ test('usuário não autenticado não pode alterar o status de um ticket', functi
     ]);
 
     $response = $this->patchJson(
-        "/api/tickets/{$ticket->id}/status",
+        "/api/v1/tickets/{$ticket->id}/status",
         ['status' => TicketStatus::IN_PROGRESS->value]
     );
 
@@ -266,7 +266,7 @@ test('não permite atualizar ticket com status inválido', function () {
     Sanctum::actingAs($agent);
 
     $response = $this->patchJson(
-        "/api/tickets/{$ticket->id}/status",
+        "/api/v1/tickets/{$ticket->id}/status",
         ['status' => 'DONE']
     );
 
