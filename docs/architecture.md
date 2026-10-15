@@ -86,6 +86,10 @@ TicketPolicy controla o acesso a tickets. USER lista e visualiza apenas tickets 
 
 A matriz detalhada está em [business-rules.md](business-rules.md).
 
+Tokens Bearer expiram após 60 minutos por padrão, configuráveis por `SANCTUM_EXPIRATION` em minutos. A limpeza dos registros de tokens expirados está agendada diariamente em `routes/console.php` pelo comando `sanctum:prune-expired --hours=24`; tokens expirados são removidos quando estão expirados há mais de 24 horas.
+
+O agendamento só é executado automaticamente quando o Laravel Scheduler está ativo no ambiente. Em produção, configure o scheduler do servidor para executar as tarefas da aplicação. Em desenvolvimento, sem um scheduler ativo, a limpeza não roda sozinha: use `php artisan schedule:work` para manter o scheduler em execução durante o teste ou execute `php artisan sanctum:prune-expired --hours=24` manualmente.
+
 ## Testes
 
 Os Feature Tests exercitam as rotas reais, autenticação, autorização, validação e persistência. Os testes estão organizados por fluxo dentro de tests/Feature. Unit Tests ficam disponíveis para lógica isolada que traga valor adicional; não é necessário duplicar em Unit uma regra já coberta adequadamente pelo fluxo da API.
