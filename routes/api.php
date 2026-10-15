@@ -5,22 +5,17 @@ use App\Http\Controllers\Api\TicketCommentController;
 use App\Http\Controllers\Api\TicketController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::prefix('v1')->group(function () {
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/tickets', [TicketController::class, 'index']);
-    Route::get('/tickets/{id}', [TicketController::class, 'show']);
-    Route::post('/tickets', [TicketController::class, 'store']);
+    Route::post('/login', [AuthController::class, 'login']);
 
-    Route::post(
-        '/tickets/{ticket}/comments',
-        [TicketCommentController::class, 'store']
-    );
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::patch(
-        '/tickets/{ticket}/status',
-        [TicketController::class, 'updateStatus']
-    );
+        Route::apiResource('tickets', TicketController::class)
+            ->only(['index', 'show', 'store']);
 
-    Route::post('/logout', [AuthController::class, 'logout']);
+        Route::patch('/tickets/{ticket}/status', [TicketController::class, 'updateStatus']);
+        Route::post('/tickets/{ticket}/comments', [TicketCommentController::class, 'store']);
+    });
 });

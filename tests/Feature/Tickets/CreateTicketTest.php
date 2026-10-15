@@ -20,7 +20,7 @@ test('usuário autenticado pode criar um ticket', function () {
 
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/tickets', [
+    $response = $this->postJson('/api/v1/tickets', [
         'category_id' => $category->id,
         'title' => 'Computador não inicia',
         'description' => 'O computador apresenta erro ao iniciar.',
@@ -41,7 +41,7 @@ test('usuário autenticado pode criar um ticket', function () {
 });
 
 test('usuário não autenticado não pode criar um ticket', function () {
-    $response = $this->postJson('/api/tickets', [
+    $response = $this->postJson('/api/v1/tickets', [
         'category_id' => 1,
         'title' => 'Computador não inicia',
         'description' => 'O computador apresenta erro ao iniciar.',
@@ -56,7 +56,7 @@ test('não permite criar ticket sem os campos obrigatórios', function () {
 
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/tickets', []);
+    $response = $this->postJson('/api/v1/tickets', []);
 
     $response
         ->assertUnprocessable()
@@ -75,7 +75,7 @@ test('não permite criar ticket com categoria inexistente', function () {
 
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/tickets', [
+    $response = $this->postJson('/api/v1/tickets', [
         'category_id' => 999999,
         'title' => 'Computador não inicia',
         'description' => 'O computador apresenta erro ao iniciar.',
@@ -94,7 +94,7 @@ test('não permite criar ticket com category_id que não seja inteiro', function
 
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/tickets', [
+    $response = $this->postJson('/api/v1/tickets', [
         'category_id' => 'categoria-invalida',
         'title' => 'Computador não inicia',
         'description' => 'O computador apresenta erro ao iniciar.',
@@ -114,7 +114,7 @@ test('não permite criar ticket com prioridade inválida', function () {
 
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/tickets', [
+    $response = $this->postJson('/api/v1/tickets', [
         'category_id' => $category->id,
         'title' => 'Computador não inicia',
         'description' => 'O computador apresenta erro ao iniciar.',
@@ -134,7 +134,7 @@ test('não permite criar ticket com título maior que 150 caracteres', function 
 
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/tickets', [
+    $response = $this->postJson('/api/v1/tickets', [
         'category_id' => $category->id,
         'title' => str_repeat('a', 151),
         'description' => 'O computador apresenta erro ao iniciar.',
@@ -155,7 +155,7 @@ test('permite criar ticket com título de 150 caracteres', function () {
 
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/tickets', [
+    $response = $this->postJson('/api/v1/tickets', [
         'category_id' => $category->id,
         'title' => $title,
         'description' => 'O computador apresenta erro ao iniciar.',
@@ -179,7 +179,7 @@ test('não permite criar ticket com título que não seja texto', function () {
 
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/tickets', [
+    $response = $this->postJson('/api/v1/tickets', [
         'category_id' => $category->id,
         'title' => 123,
         'description' => 'O computador apresenta erro ao iniciar.',
@@ -199,7 +199,7 @@ test('não permite criar ticket com descrição que não seja texto', function (
 
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/tickets', [
+    $response = $this->postJson('/api/v1/tickets', [
         'category_id' => $category->id,
         'title' => 'Computador não inicia',
         'description' => 123,
@@ -220,7 +220,7 @@ test('criação de ticket ignora user_id enviado no payload', function () {
 
     Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/tickets', [
+    $response = $this->postJson('/api/v1/tickets', [
         'user_id' => $otherUser->id,
         'category_id' => $category->id,
         'title' => 'Computador não inicia',

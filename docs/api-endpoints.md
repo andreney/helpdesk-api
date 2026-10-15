@@ -2,7 +2,7 @@
 
 Base local: http://127.0.0.1:8000
 
-Todas as rotas, exceto POST /api/login, exigem um token Sanctum no cabeçalho:
+Todas as rotas, exceto POST /api/v1/login, exigem um token Sanctum no cabeçalho:
 
     Authorization: Bearer SEU_TOKEN
 
@@ -10,14 +10,15 @@ Todas as rotas, exceto POST /api/login, exigem um token Sanctum no cabeçalho:
 
 | Método | Rota | Autenticação | Permissão |
 |---|---|---|---|
-| POST | /api/login | Não | Credenciais válidas |
-| GET | /api/tickets | Sim | USER vê os próprios; AGENT e ADMIN veem todos |
-| POST | /api/tickets | Sim | Todos os perfis |
-| GET | /api/tickets/{id} | Sim | USER vê o próprio; AGENT e ADMIN veem qualquer |
-| PATCH | /api/tickets/{ticket}/status | Sim | AGENT e ADMIN |
-| POST | /api/tickets/{ticket}/comments | Sim | USER no próprio ticket; AGENT e ADMIN em qualquer |
+| POST | /api/v1/login | Não | Credenciais válidas |
+| POST | /api/v1/logout | Sim | Revoga o token usado na requisição |
+| GET | /api/v1/tickets | Sim | USER vê os próprios; AGENT e ADMIN veem todos |
+| POST | /api/v1/tickets | Sim | Todos os perfis |
+| GET | /api/v1/tickets/{ticket} | Sim | USER vê o próprio; AGENT e ADMIN veem qualquer |
+| PATCH | /api/v1/tickets/{ticket}/status | Sim | AGENT e ADMIN |
+| POST | /api/v1/tickets/{ticket}/comments | Sim | USER no próprio ticket; AGENT e ADMIN em qualquer |
 
-## POST /api/login
+## POST /api/v1/login
 
 Autentica o usuário e retorna um token Bearer.
 
@@ -46,7 +47,21 @@ Respostas de erro:
 - 401: email ou senha incorretos.
 - 422: email ou senha ausente ou inválido.
 
-## GET /api/tickets
+## POST /api/v1/logout
+
+Encerra a sessão revogando somente o token Sanctum enviado no cabeçalho `Authorization`. Outros tokens do mesmo usuário permanecem válidos.
+
+Resposta 200:
+
+    {
+      "message": "Logout realizado com sucesso."
+    }
+
+Resposta de erro:
+
+- 401: token ausente ou inválido.
+
+## GET /api/v1/tickets
 
 Lista tickets. USER recebe somente os tickets que abriu. AGENT e ADMIN recebem tickets de todos os usuários.
 
@@ -68,7 +83,7 @@ Resposta de erro:
 
 - 401: token ausente ou inválido.
 
-## POST /api/tickets
+## POST /api/v1/tickets
 
 Cria um ticket para o usuário autenticado. O campo user_id não deve ser enviado; a API define o solicitante com base no token.
 
@@ -98,7 +113,7 @@ Respostas de erro:
 
 Observação: a API ainda não recusa categorias inativas. Essa regra está definida no documento de regras de negócio, mas não foi aplicada à validação atual.
 
-## GET /api/tickets/{id}
+## GET /api/v1/tickets/{ticket}
 
 Retorna os dados de um ticket, incluindo comentários e autores.
 
@@ -110,7 +125,7 @@ Respostas de erro:
 - 403: USER tenta acessar ticket de outra pessoa.
 - 404: ticket inexistente.
 
-## PATCH /api/tickets/{ticket}/status
+## PATCH /api/v1/tickets/{ticket}/status
 
 Altera o status do ticket. Apenas AGENT e ADMIN podem executar a operação.
 
@@ -140,7 +155,7 @@ Respostas de erro:
 - 404: ticket inexistente.
 - 422: status desconhecido ou transição não permitida.
 
-## POST /api/tickets/{ticket}/comments
+## POST /api/v1/tickets/{ticket}/comments
 
 Adiciona um comentário ao ticket. O autor é sempre o usuário autenticado e o ticket é determinado pela rota; user_id e ticket_id enviados no payload são ignorados.
 

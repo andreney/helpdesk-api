@@ -19,7 +19,7 @@ test('usuário comum pode visualizar o próprio ticket', function () {
 
     Sanctum::actingAs($user);
 
-    $response = $this->getJson("/api/tickets/{$ticket->id}");
+    $response = $this->getJson("/api/v1/tickets/{$ticket->id}");
 
     $response
         ->assertOk()
@@ -42,7 +42,7 @@ test('usuário comum não pode visualizar ticket de outro usuário', function ()
 
     Sanctum::actingAs($user);
 
-    $response = $this->getJson("/api/tickets/{$ticket->id}");
+    $response = $this->getJson("/api/v1/tickets/{$ticket->id}");
 
     $response
         ->assertForbidden()
@@ -64,7 +64,7 @@ test('administrador e agente podem visualizar ticket de outro usuário', functio
 
     Sanctum::actingAs($viewer);
 
-    $response = $this->getJson("/api/tickets/{$ticket->id}");
+    $response = $this->getJson("/api/v1/tickets/{$ticket->id}");
 
     $response
         ->assertOk()
@@ -78,7 +78,7 @@ test('administrador e agente podem visualizar ticket de outro usuário', functio
 test('usuário não autenticado não pode visualizar um ticket', function () {
     $ticket = Ticket::factory()->create();
 
-    $response = $this->getJson("/api/tickets/{$ticket->id}");
+    $response = $this->getJson("/api/v1/tickets/{$ticket->id}");
 
     $response->assertUnauthorized();
 });
@@ -102,7 +102,7 @@ test('visualização do ticket inclui seus comentários e autores', function () 
 
     Sanctum::actingAs($owner);
 
-    $response = $this->getJson("/api/tickets/{$ticket->id}");
+    $response = $this->getJson("/api/v1/tickets/{$ticket->id}");
 
     $response
         ->assertOk()
@@ -118,7 +118,7 @@ test('retorna 404 ao visualizar ticket inexistente', function () {
 
     Sanctum::actingAs($user);
 
-    $response = $this->getJson('/api/tickets/0');
+    $response = $this->getJson('/api/v1/tickets/0');
 
     $response
         ->assertNotFound()

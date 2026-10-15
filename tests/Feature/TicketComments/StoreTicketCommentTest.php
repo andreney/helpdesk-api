@@ -19,7 +19,7 @@ test('usuário autenticado pode comentar no próprio ticket', function () {
     Sanctum::actingAs($user);
 
     $response = $this->postJson(
-        "/api/tickets/{$ticket->id}/comments",
+        "/api/v1/tickets/{$ticket->id}/comments",
         ['comment' => $comment]
     );
 
@@ -50,7 +50,7 @@ test('usuário comum não pode comentar no ticket de outra pessoa', function () 
     Sanctum::actingAs($user);
 
     $response = $this->postJson(
-        "/api/tickets/{$ticket->id}/comments",
+        "/api/v1/tickets/{$ticket->id}/comments",
         ['comment' => $comment]
     );
 
@@ -78,7 +78,7 @@ test('administrador e agente podem comentar no ticket de outra pessoa', function
     Sanctum::actingAs($authorizedUser);
 
     $response = $this->postJson(
-        "/api/tickets/{$ticket->id}/comments",
+        "/api/v1/tickets/{$ticket->id}/comments",
         ['comment' => $comment]
     );
 
@@ -101,7 +101,7 @@ test('usuário não autenticado não pode comentar em um ticket', function () {
     $ticket = Ticket::factory()->create();
 
     $response = $this->postJson(
-        "/api/tickets/{$ticket->id}/comments",
+        "/api/v1/tickets/{$ticket->id}/comments",
         ['comment' => 'Comentário sem autenticação.']
     );
 
@@ -120,7 +120,7 @@ test('não permite criar comentário vazio', function () {
     Sanctum::actingAs($user);
 
     $response = $this->postJson(
-        "/api/tickets/{$ticket->id}/comments",
+        "/api/v1/tickets/{$ticket->id}/comments",
         ['comment' => '']
     );
 
@@ -141,7 +141,7 @@ test('não permite criar comentário quando comment não é texto', function () 
     Sanctum::actingAs($user);
 
     $response = $this->postJson(
-        "/api/tickets/{$ticket->id}/comments",
+        "/api/v1/tickets/{$ticket->id}/comments",
         ['comment' => 123]
     );
 
@@ -168,7 +168,7 @@ test('criação de comentário ignora user_id e ticket_id enviados no payload', 
     Sanctum::actingAs($user);
 
     $response = $this->postJson(
-        "/api/tickets/{$ticket->id}/comments",
+        "/api/v1/tickets/{$ticket->id}/comments",
         [
             'user_id' => $otherUser->id,
             'ticket_id' => $otherTicket->id,

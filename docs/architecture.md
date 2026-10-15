@@ -80,7 +80,7 @@ Os valores de prioridade e status são representados por PHP Enums. Os status at
 
 ## Autenticação e autorização
 
-POST /api/login emite tokens Bearer. As demais rotas da API ficam sob auth:sanctum.
+POST /api/v1/login emite tokens Bearer. As demais rotas da API ficam sob auth:sanctum.
 
 TicketPolicy controla o acesso a tickets. USER lista e visualiza apenas tickets próprios e comenta apenas neles. AGENT e ADMIN podem listar, visualizar e comentar em qualquer ticket. Apenas AGENT e ADMIN podem alterar status.
 
