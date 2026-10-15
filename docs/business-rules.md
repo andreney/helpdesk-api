@@ -4,7 +4,7 @@ Este documento registra as regras implementadas e distingue os requisitos ainda 
 
 ## Usuários e perfis
 
-Os perfis são ADMIN, AGENT e USER. A API exige autenticação Sanctum em todas as rotas, exceto POST /api/login.
+Os perfis são ADMIN, AGENT e USER. A API exige autenticação Sanctum em todas as rotas, exceto POST /api/v1/login.
 
 | Ação | ADMIN | AGENT | USER |
 |---|---|---|---|

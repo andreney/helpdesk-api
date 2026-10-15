@@ -28,12 +28,12 @@ Ao encerrar um ticket, closed_at é preenchido. Nas demais transições permitid
 
 | Método | Rota | Acesso |
 |---|---|---|
-| POST | /api/login | Público |
-| GET | /api/tickets | Autenticado |
-| POST | /api/tickets | Autenticado |
-| GET | /api/tickets/{id} | Autenticado e autorizado pela policy |
-| PATCH | /api/tickets/{ticket}/status | ADMIN ou AGENT |
-| POST | /api/tickets/{ticket}/comments | USER dono do ticket, ADMIN ou AGENT |
+| POST | /api/v1/login | Público |
+| GET | /api/v1/tickets | Autenticado |
+| POST | /api/v1/tickets | Autenticado |
+| GET | /api/v1/tickets/{ticket} | Autenticado e autorizado pela policy |
+| PATCH | /api/v1/tickets/{ticket}/status | ADMIN ou AGENT |
+| POST | /api/v1/tickets/{ticket}/comments | USER dono do ticket, ADMIN ou AGENT |
 
 Payloads, exemplos e respostas estão em [api-endpoints.md](api-endpoints.md).
 
