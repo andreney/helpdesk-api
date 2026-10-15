@@ -21,4 +21,6 @@ Route::middleware('auth:sanctum')->group(function () {
         '/tickets/{ticket}/status',
         [TicketController::class, 'updateStatus']
     );
+
+    Route::post('/logout', [AuthController::class, 'logout']);
 });

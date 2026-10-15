@@ -53,7 +53,6 @@ Para executar novamente:
 - Edição e exclusão de tickets não possuem rotas.
 - Não há endpoints de administração de categorias ou usuários.
 - Atribuição de agente e filtros/paginação da listagem ainda não estão disponíveis.
-- A suíte não tem workflow de CI no GitHub Actions.
 
 ## Documentos relacionados
 

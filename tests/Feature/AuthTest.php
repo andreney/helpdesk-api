@@ -113,3 +113,64 @@ test('login rejeita senha incorreta para usuário existente', function () {
             'message' => 'Credenciais inválidas.',
         ]);
 });
+
+test('usuário autenticado pode realizar logout', function () {
+    $user = User::factory()->create();
+    $token = $user->createToken('api-token')->plainTextToken;
+
+    $response = $this
+        ->withHeader('Authorization', 'Bearer '.$token)
+        ->postJson('/api/logout');
+
+    $response
+        ->assertOk()
+        ->assertJson([
+            'message' => 'Logout realizado com sucesso.',
+        ]);
+
+    $this->assertDatabaseCount('personal_access_tokens', 0);
+});
+
+test('logout sem autenticação retorna 401', function () {
+    $this->postJson('/api/logout')->assertUnauthorized();
+});
+
+test('logout revoga apenas o token usado na requisição', function () {
+    $user = User::factory()->create();
+    $tokenAtual = $user->createToken('dispositivo-1')->plainTextToken;
+    $user->createToken('dispositivo-2');
+
+    $this
+        ->withHeader('Authorization', 'Bearer '.$tokenAtual)
+        ->postJson('/api/logout')
+        ->assertOk();
+
+    $this->assertDatabaseCount('personal_access_tokens', 1);
+    $this->assertDatabaseHas('personal_access_tokens', [
+        'tokenable_id' => $user->id,
+        'name' => 'dispositivo-2',
+    ]);
+});
+
+test('token revogado no logout não acessa mais rotas protegidas', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('password'),
+    ]);
+
+    $token = $this->postJson('/api/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ])->json('token');
+
+    $this
+        ->withHeader('Authorization', 'Bearer '.$token)
+        ->postJson('/api/logout')
+        ->assertOk();
+
+    $this->app['auth']->forgetGuards();
+
+    $this
+        ->withHeader('Authorization', 'Bearer '.$token)
+        ->getJson('/api/tickets')
+        ->assertUnauthorized();
+});
