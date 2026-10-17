@@ -23,7 +23,7 @@ class StoreTicketCommentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'comment' => ['required', 'string'],
+            'comment' => ['required', 'string', 'max:5000'],
         ];
     }
 }

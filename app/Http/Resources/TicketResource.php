@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\TicketStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,6 +21,10 @@ class TicketResource extends JsonResource
             'description' => $this->description,
             'priority' => $this->priority,
             'status' => $this->status,
+            'allowed_transitions' => array_map(
+                fn (TicketStatus $status) => $status->value,
+                $this->status->allowedTransitions()
+            ),
             'closed_at' => $this->closed_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

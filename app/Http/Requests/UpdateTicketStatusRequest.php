@@ -14,7 +14,8 @@ class UpdateTicketStatusRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        // A autorização roda antes da validação: quem não tem permissão recebe 403, não 422.
+        return $this->user()?->can('updateStatus', $this->route('ticket')) ?? false;
     }
 
     /**
