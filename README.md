@@ -7,7 +7,7 @@
 Autenticação por tokens, controle de acesso por perfil, tickets, comentários e testes automatizados.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/andreney/helpdesk-api/tests.yml?branch=main&label=CI&logo=githubactions&logoColor=white)](https://github.com/andreney/helpdesk-api/actions)
-[![PHP](https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![PHP](https://img.shields.io/badge/PHP-8.4%2B-777BB4?logo=php&logoColor=white)](https://www.php.net/)
 [![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Sanctum](https://img.shields.io/badge/Auth-Sanctum-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/docs/sanctum)
@@ -42,7 +42,7 @@ Autenticação por tokens, controle de acesso por perfil, tickets, comentários 
 
 | Camada         | Tecnologia                                      |
 | -------------- | ----------------------------------------------- |
-| Linguagem      | PHP 8.3+                                        |
+| Linguagem      | PHP 8.4+                                        |
 | Framework      | Laravel 13                                      |
 | Banco de dados | MySQL                                           |
 | Autenticação   | Laravel Sanctum                                 |
@@ -50,7 +50,7 @@ Autenticação por tokens, controle de acesso por perfil, tickets, comentários 
 
 ## 📋 Pré-requisitos
 
-- PHP 8.3 ou superior
+- PHP 8.4 ou superior
 - [Composer](https://getcomposer.org/)
 - MySQL em execução e um banco de dados criado para o projeto
 
