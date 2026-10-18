@@ -84,7 +84,7 @@ test('agente pode encerrar ticket em atendimento e registrar a data de encerrame
 
     $response
         ->assertOk()
-        ->assertJsonPath('status', TicketStatus::CLOSED->value);
+        ->assertJsonPath('data.status', TicketStatus::CLOSED->value);
 
     $ticket->refresh();
 
@@ -224,7 +224,7 @@ test('administrador pode alterar o status de um ticket', function () {
 
     $response
         ->assertOk()
-        ->assertJsonPath('status', TicketStatus::IN_PROGRESS->value);
+        ->assertJsonPath('data.status', TicketStatus::IN_PROGRESS->value);
 
     $this->assertDatabaseHas('tickets', [
         'id' => $ticket->id,

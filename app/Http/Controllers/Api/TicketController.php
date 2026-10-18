@@ -70,14 +70,14 @@ class TicketController extends Controller
     public function updateStatus(
         UpdateTicketStatusRequest $request,
         Ticket $ticket
-    ): JsonResponse {
-        Gate::authorize('updateStatus', $ticket);
-
+    ): TicketResource {
+        // A autorização (policy updateStatus) é feita no UpdateTicketStatusRequest.
         $ticket = $this->ticketService->updateStatus(
             $ticket,
-            $request->validated()['status']
+            $request->validated()['status'],
+            $request->user()
         );
 
-        return response()->json($ticket);
+        return new TicketResource($ticket);
     }
 }

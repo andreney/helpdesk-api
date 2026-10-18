@@ -8,6 +8,7 @@ use App\Models\Ticket;
 use App\Models\User;
 use App\Repositories\TicketRepository;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class TicketService
 {
@@ -53,41 +54,33 @@ class TicketService
 
     /**
      * Atualiza o status de um ticket.
+     *
+     * A leitura e a gravação acontecem em uma transação com a linha bloqueada,
+     * então a transição é sempre validada contra o status mais recente.
+     * Ao iniciar o atendimento de um ticket sem responsável, quem iniciou assume o ticket.
+     *
+     * @throws InvalidTicketStatusTransitionException
      */
-    public function updateStatus(Ticket $ticket, string $status): Ticket
+    public function updateStatus(Ticket $ticket, string $status, User $actor): Ticket
     {
-        $currentStatus = $ticket->status;
+        $target = TicketStatus::from($status);
 
-        $allowedTransitions = [
-            TicketStatus::OPEN->value => [
-                TicketStatus::IN_PROGRESS->value,
-            ],
-            TicketStatus::IN_PROGRESS->value => [
-                TicketStatus::WAITING->value,
-                TicketStatus::CLOSED->value,
-            ],
-            TicketStatus::WAITING->value => [
-                TicketStatus::IN_PROGRESS->value,
-            ],
-            TicketStatus::CLOSED->value => [],
-        ];
+        return DB::transaction(function () use ($ticket, $target, $actor): Ticket {
+            $current = $this->ticketRepository->findForUpdate($ticket->id);
 
-        if (! in_array(
-            $status,
-            $allowedTransitions[$currentStatus->value],
-            true
-        )) {
-            throw new InvalidTicketStatusTransitionException;
-        }
+            if (! $current->status->canTransitionTo($target)) {
+                throw new InvalidTicketStatusTransitionException;
+            }
 
-        $closedAt = $status === TicketStatus::CLOSED->value
-            ? now()
-            : null;
+            $assignedTo = $current->assigned_to
+                ?? ($target === TicketStatus::IN_PROGRESS ? $actor->id : null);
 
-        return $this->ticketRepository->updateStatus(
-            $ticket,
-            $status,
-            $closedAt
-        );
+            return $this->ticketRepository->updateStatus(
+                $current,
+                $target,
+                $target === TicketStatus::CLOSED ? now() : null,
+                $assignedTo
+            );
+        });
     }
 }

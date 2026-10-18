@@ -25,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
+        // Regra de negócio esperada (422), não uma falha: não deve poluir o log com ERROR e stack trace.
+        $exceptions->dontReport(InvalidTicketStatusTransitionException::class);
+
         $exceptions->render(function (
             AuthenticationException $exception,
             Request $request

@@ -20,14 +20,14 @@ O ticket criado fica associado ao usuário autenticado. Valores de user_id envia
 
 Toda criação de ticket exige um category_id inteiro que corresponda a uma categoria existente.
 
-A regra de negócio definida é que categorias inativas não devem ser usadas em novos tickets. **Essa regra ainda não está aplicada na validação atual da API**, que verifica a existência da categoria, mas não o campo active.
+Categorias inativas não podem ser usadas em novos tickets: a validação exige que `category_id` aponte para uma categoria existente **e ativa**. As categorias disponíveis são listadas em `GET /api/v1/categories`.
 
 Categorias relacionadas a tickets devem ser desativadas em vez de removidas, para preservar o histórico.
 
 ## Tickets
 
 - title, description, category_id e priority são obrigatórios na criação.
-- title e description devem ser texto; title aceita até 150 caracteres.
+- title e description devem ser texto; title aceita até 150 caracteres e description até 5000.
 - priority aceita LOW, MEDIUM, HIGH ou URGENT.
 - Todo ticket novo inicia em OPEN.
 - O usuário solicitante é obtido da autenticação, não do payload.
@@ -46,11 +46,17 @@ A API aceita os seguintes status e transições:
 
 Não é permitido fechar diretamente um ticket OPEN. Quando o ticket passa para CLOSED, closed_at recebe a data do encerramento. Nas outras transições permitidas, closed_at permanece nulo.
 
-Somente ADMIN e AGENT podem solicitar a mudança de status. Além da permissão, a transição precisa estar na matriz acima.
+Somente ADMIN e AGENT podem solicitar a mudança de status. Além da permissão, a transição precisa estar na matriz acima. A permissão é verificada antes da validação do corpo da requisição.
+
+A matriz de transições vive no enum `TicketStatus` (`allowedTransitions()`), e a API a expõe em `allowed_transitions` para que clientes não precisem duplicá-la.
+
+## Responsável pelo ticket
+
+Todo ticket nasce sem responsável. Ao passar para IN_PROGRESS, se ainda não houver responsável, quem executou a ação assume o ticket. Um responsável já definido é mantido nas transições seguintes. Reatribuição manual ainda não existe.
 
 ## Comentários
 
-- comment é obrigatório e deve ser texto.
+- comment é obrigatório, texto e limitado a 5000 caracteres.
 - O autor é sempre o usuário autenticado; user_id enviado no payload é ignorado.
 - O ticket é determinado pela rota; ticket_id enviado no payload é ignorado.
 - USER pode comentar apenas em ticket próprio.
@@ -68,6 +74,5 @@ Somente ADMIN e AGENT podem solicitar a mudança de status. Além da permissão,
 
 ## Regras ainda não implementadas
 
-- Recusar criação de tickets em categorias inativas.
-- Definir regras de atribuição e alteração de agente responsável.
+- Reatribuição manual do agente responsável.
 - Definir operações de edição e exclusão de tickets, que ainda não têm rotas.
