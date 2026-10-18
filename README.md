@@ -19,6 +19,7 @@ Autenticação por tokens, controle de acesso por perfil, tickets, comentários 
 [Instalação](#-instalação) •
 [Uso rápido](#-uso-rápido) •
 [Testes](#-testes) •
+[Fluxo de branches](#-fluxo-de-branches) •
 [Documentação](#-documentação)
 
 </div>
@@ -161,6 +162,26 @@ Verifique (ou corrija) o estilo de código com o Pint:
 composer lint     # apenas verifica
 composer format   # corrige
 ```
+
+## 🌿 Fluxo de branches
+
+```text
+feat/* · fix/* · chore/* · docs/*  ──PR──▶  staging  ──PR──▶  main
+```
+
+| Branch      | Papel                                                                 |
+| ----------- | --------------------------------------------------------------------- |
+| `main`      | Versão estável. Só recebe o que já foi validado no `staging`.         |
+| `staging`   | Integração: reúne as mudanças prontas e valida tudo junto, com o frontend. |
+| `feat/*`, `fix/*`, `chore/*`, `docs/*` | Uma mudança por branch, sempre a partir do `staging`. |
+
+**Regras**
+
+- Nenhuma alteração entra direto em `staging` ou `main`: tudo passa por **Pull Request**.
+- O CI (Pint e testes em PHP 8.4) precisa estar verde antes do merge.
+- Commits seguem o padrão [Conventional Commits](https://www.conventionalcommits.org/pt-br/) (`feat(tickets): ...`, `fix(auth): ...`).
+- O merge `staging → main` usa **merge commit**, para manter o histórico dos dois branches alinhado.
+- Versões estáveis são marcadas com tags (`v1.0.0`, `v1.1.0`...).
 
 ## 📚 Documentação
 
