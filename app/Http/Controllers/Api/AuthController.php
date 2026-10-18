@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -22,7 +25,14 @@ class AuthController extends Controller
 
         $user = User::where('email', $credentials['email'])->first();
 
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+        // Sempre compara a senha com algum hash, mesmo quando o e-mail não existe:
+        // assim o tempo de resposta não revela quais e-mails estão cadastrados.
+        $passwordMatches = Hash::check(
+            $credentials['password'],
+            $user?->password ?? $this->fallbackHash()
+        );
+
+        if (! $user || ! $passwordMatches) {
             return response()->json([
                 'message' => 'Credenciais inválidas.',
             ], 401);
@@ -33,7 +43,7 @@ class AuthController extends Controller
         return response()->json([
             'token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user,
+            'user' => (new UserResource($user))->resolve(),
         ]);
     }
 
@@ -47,5 +57,17 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Logout realizado com sucesso.',
         ]);
+    }
+
+    /**
+     * Hash descartável, gerado com o custo atual do bcrypt, usado só para
+     * igualar o tempo de resposta quando o usuário não existe.
+     */
+    private function fallbackHash(): string
+    {
+        return Cache::rememberForever(
+            'auth.fallback-hash',
+            fn () => Hash::make(Str::random(40))
+        );
     }
 }

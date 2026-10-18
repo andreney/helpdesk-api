@@ -12,6 +12,7 @@ Todas as rotas, exceto POST /api/v1/login, exigem um token Sanctum no cabeçalho
 |---|---|---|---|
 | POST | /api/v1/login | Não | Credenciais válidas |
 | POST | /api/v1/logout | Sim | Revoga o token usado na requisição |
+| GET | /api/v1/categories | Sim | Todos os perfis (somente categorias ativas) |
 | GET | /api/v1/tickets | Sim | USER vê os próprios; AGENT e ADMIN veem todos |
 | POST | /api/v1/tickets | Sim | Todos os perfis |
 | GET | /api/v1/tickets/{ticket} | Sim | USER vê o próprio; AGENT e ADMIN veem qualquer |
@@ -38,14 +39,17 @@ Resposta 200:
         "id": 1,
         "name": "Usuário",
         "email": "usuario@example.com",
-        "role": 1
+        "role": "USER"
       }
     }
+
+O campo `role` é o nome do perfil: `USER`, `AGENT` ou `ADMIN`.
 
 Respostas de erro:
 
 - 401: email ou senha incorretos.
 - 422: email ou senha ausente ou inválido.
+- 429: excesso de tentativas. O limite é de 5 por minuto para o mesmo e-mail e IP, e de 20 por minuto por IP.
 
 Os tokens Bearer expiram após 60 minutos por padrão. Esse prazo pode ser alterado pela variável de ambiente `SANCTUM_EXPIRATION`, cujo valor é expresso em minutos. Depois da expiração, as rotas protegidas recusam o token e retornam 401; é necessário fazer login novamente para obter outro.
 
@@ -60,6 +64,26 @@ Resposta 200:
     }
 
 Resposta de erro:
+
+- 401: token ausente ou inválido.
+
+## GET /api/v1/categories
+
+Lista as categorias ativas, em ordem alfabética. São as únicas aceitas em `category_id` na criação de tickets.
+
+Resposta 200:
+
+    {
+      "data": [
+        {
+          "id": 1,
+          "name": "Acesso e senhas",
+          "description": "Contas, permissões e redefinição de senha"
+        }
+      ]
+    }
+
+Respostas de erro:
 
 - 401: token ausente ou inválido.
 
@@ -100,9 +124,9 @@ Payload:
 
 Regras atuais:
 
-- category_id deve ser um inteiro correspondente a uma categoria existente.
+- category_id deve ser um inteiro correspondente a uma categoria **ativa** (veja `GET /api/v1/categories`).
 - title é obrigatório, texto e limitado a 150 caracteres.
-- description é obrigatório e deve ser texto.
+- description é obrigatório, texto e limitado a 5000 caracteres.
 - priority aceita LOW, MEDIUM, HIGH ou URGENT.
 - O novo ticket começa em OPEN.
 
@@ -113,13 +137,11 @@ Respostas de erro:
 - 401: token ausente ou inválido.
 - 422: campo obrigatório ou inválido.
 
-Observação: a API ainda não recusa categorias inativas. Essa regra está definida no documento de regras de negócio, mas não foi aplicada à validação atual.
-
 ## GET /api/v1/tickets/{ticket}
 
 Retorna os dados de um ticket, incluindo comentários e autores.
 
-Resposta 200: objeto do ticket dentro de data.
+Resposta 200: objeto do ticket dentro de data. O campo `allowed_transitions` lista os status para os quais o ticket pode evoluir (vazio quando CLOSED).
 
 Respostas de erro:
 
@@ -148,12 +170,16 @@ Transições permitidas:
 
 Ao mudar para CLOSED, closed_at é preenchido. Nas outras transições permitidas, permanece nulo.
 
-Resposta 200: objeto do ticket atualizado.
+Ao mudar para IN_PROGRESS um ticket que ainda não tem responsável, quem executou a ação passa a ser o responsável (`assigned_to`). Um responsável já definido é mantido.
+
+A alteração é feita em transação, com o ticket bloqueado, então duas mudanças simultâneas não se sobrepõem.
+
+Resposta 200: objeto do ticket atualizado dentro de `data` (mesmo formato de `GET /api/v1/tickets/{ticket}`), incluindo `allowed_transitions` com os próximos status possíveis.
 
 Respostas de erro:
 
 - 401: token ausente ou inválido.
-- 403: perfil sem permissão.
+- 403: perfil sem permissão (verificado antes da validação do corpo).
 - 404: ticket inexistente.
 - 422: status desconhecido ou transição não permitida.
 
@@ -185,7 +211,7 @@ Respostas de erro:
 - 401: token ausente ou inválido.
 - 403: USER tenta comentar no ticket de outra pessoa.
 - 404: ticket inexistente.
-- 422: comentário ausente ou não textual.
+- 422: comentário ausente, não textual ou com mais de 5000 caracteres.
 
 ## Formato geral das respostas de erro
 
@@ -195,4 +221,4 @@ A API usa códigos HTTP para indicar o resultado. Em particular, a resposta 403 
       "message": "Você não tem permissão para realizar esta ação."
     }
 
-As respostas 422 contêm os erros de validação ou a mensagem da regra de negócio que recusou a transição.
+As respostas 422 contêm os erros de validação, em português (`APP_LOCALE=pt_BR`), ou a mensagem da regra de negócio que recusou a transição.

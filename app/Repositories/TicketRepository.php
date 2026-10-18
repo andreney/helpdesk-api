@@ -2,9 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Enums\TicketStatus;
 use App\Enums\UserRole;
 use App\Models\Ticket;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
 
 class TicketRepository
@@ -59,15 +61,33 @@ class TicketRepository
     }
 
     /**
-     * Atualiza o status de um ticket.
+     * Busca o ticket bloqueando a linha até o fim da transação atual,
+     * para que duas alterações simultâneas não se sobreponham.
      */
-    public function updateStatus(Ticket $ticket, string $status, $closedAt = null): Ticket
+    public function findForUpdate(int $id): Ticket
     {
+        return Ticket::query()->lockForUpdate()->findOrFail($id);
+    }
+
+    /**
+     * Atualiza o status de um ticket, a data de encerramento e o responsável.
+     */
+    public function updateStatus(
+        Ticket $ticket,
+        TicketStatus $status,
+        ?CarbonInterface $closedAt,
+        ?int $assignedTo
+    ): Ticket {
         $ticket->update([
             'status' => $status,
             'closed_at' => $closedAt,
+            'assigned_to' => $assignedTo,
         ]);
 
-        return $ticket->refresh();
+        return $ticket->load([
+            'category',
+            'user',
+            'assignedTo',
+        ]);
     }
 }

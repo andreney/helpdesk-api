@@ -6,7 +6,11 @@ API REST de suporte construída com Laravel 13, PHP 8.4 e MySQL. A autenticaçã
 
 - Login com emissão de token Bearer.
 - Perfis USER, AGENT e ADMIN.
-- Criação de tickets com validação de categoria existente, título, descrição e prioridade.
+- Criação de tickets com validação de categoria ativa, título, descrição e prioridade.
+- Listagem de categorias ativas (`GET /api/v1/categories`).
+- Atribuição automática do responsável ao iniciar o atendimento.
+- Mensagens de validação em português (pt_BR).
+- Seeder de demonstração com um usuário por perfil, categorias e tickets.
 - Listagem: USER vê somente os próprios tickets; AGENT e ADMIN veem todos.
 - Visualização: USER vê somente os próprios tickets; AGENT e ADMIN podem ver qualquer ticket.
 - Alteração de status por AGENT e ADMIN, respeitando a matriz de transições.
@@ -29,6 +33,7 @@ Ao encerrar um ticket, closed_at é preenchido. Nas demais transições permitid
 | Método | Rota | Acesso |
 |---|---|---|
 | POST | /api/v1/login | Público |
+| GET | /api/v1/categories | Autenticado |
 | GET | /api/v1/tickets | Autenticado |
 | POST | /api/v1/tickets | Autenticado |
 | GET | /api/v1/tickets/{ticket} | Autenticado e autorizado pela policy |
@@ -41,18 +46,15 @@ Payloads, exemplos e respostas estão em [api-endpoints.md](api-endpoints.md).
 
 A suíte usa Pest e cobre os fluxos HTTP de autenticação, criação/listagem/visualização de tickets, status e comentários.
 
-Última execução registrada em 13/10/2026: 57 testes passaram, com 187 assertions.
-
-Para executar novamente:
+Para executar:
 
     php artisan test --compact
 
 ## Pontos ainda não implementados ou a decidir
 
-- A regra definida de impedir tickets em categorias inativas ainda não está aplicada na validação de criação; hoje é verificado se a categoria existe.
 - Edição e exclusão de tickets não possuem rotas.
 - Não há endpoints de administração de categorias ou usuários.
-- Atribuição de agente e filtros/paginação da listagem ainda não estão disponíveis.
+- Reatribuição manual de agente e filtros/paginação da listagem ainda não estão disponíveis.
 
 ## Documentos relacionados
 
