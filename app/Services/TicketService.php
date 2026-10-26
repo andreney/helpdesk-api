@@ -8,6 +8,7 @@ use App\Models\Ticket;
 use App\Models\User;
 use App\Repositories\TicketRepository;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class TicketService
@@ -42,6 +43,26 @@ class TicketService
     public function getAll(User $user): Collection
     {
         return $this->ticketRepository->getAll($user);
+    }
+
+    /**
+     * Lista os tickets paginados, aplicando os filtros informados.
+     *
+     * @param  array{status?: ?string, search?: ?string, mine?: bool}  $filters
+     */
+    public function getPaginated(User $user, array $filters, int $perPage): LengthAwarePaginator
+    {
+        return $this->ticketRepository->paginate($user, $filters, $perPage);
+    }
+
+    /**
+     * Totais por status dos tickets visíveis ao usuário.
+     *
+     * @return array{total: int, by_status: array<string, int>}
+     */
+    public function getSummary(User $user, bool $mine): array
+    {
+        return $this->ticketRepository->countByStatus($user, $mine);
     }
 
     /**

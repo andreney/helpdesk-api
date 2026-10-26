@@ -16,6 +16,8 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/categories', [CategoryController::class, 'index']);
 
+        Route::get('/tickets/summary', [TicketController::class, 'summary']);
+
         Route::apiResource('tickets', TicketController::class)
             ->only(['index', 'show', 'store']);
 

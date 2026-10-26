@@ -100,8 +100,8 @@ Execute a suíte com:
 
 ## Próximas evoluções
 
-- Aplicar a regra que impede usar categorias inativas na criação de tickets.
-- Definir e implementar atribuição de tickets a agentes.
-- Avaliar paginação e filtros para listagem.
-- Criar workflow de CI para executar os testes em pushes e pull requests.
+- Reatribuição manual do agente responsável.
+- Endpoints administrativos de categorias e usuários.
+- Índice em tickets.status (com created_at) se o volume de tickets crescer.
+- Restringir o CORS (config/cors.php) antes de publicar a API.
 - Documentar alterações futuras neste arquivo e em business-rules.md quando afetarem a arquitetura ou o comportamento.

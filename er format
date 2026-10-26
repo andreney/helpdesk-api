@@ -1,0 +1,87 @@
+[1mdiff --git a/docs/api-endpoints.md b/docs/api-endpoints.md[m
+[1mindex b5b05b0..f52d008 100644[m
+[1m--- a/docs/api-endpoints.md[m
+[1m+++ b/docs/api-endpoints.md[m
+[36m@@ -13,7 +13,8 @@[m [m## Resumo das rotas[m
+ | POST | /api/v1/login | Não | Credenciais válidas |[m
+ | POST | /api/v1/logout | Sim | Revoga o token usado na requisição |[m
+ | GET | /api/v1/categories | Sim | Todos os perfis (somente categorias ativas) |[m
+[31m-| GET | /api/v1/tickets | Sim | USER vê os próprios; AGENT e ADMIN veem todos |[m
+[32m+[m[32m| GET | /api/v1/tickets | Sim | USER vê os próprios; AGENT e ADMIN veem todos (paginado, com filtros) |[m
+[32m+[m[32m| GET | /api/v1/tickets/summary | Sim | Mesma visibilidade da listagem |[m
+ | POST | /api/v1/tickets | Sim | Todos os perfis |[m
+ | GET | /api/v1/tickets/{ticket} | Sim | USER vê o próprio; AGENT e ADMIN veem qualquer |[m
+ | PATCH | /api/v1/tickets/{ticket}/status | Sim | AGENT e ADMIN |[m
+[36m@@ -89,7 +90,19 @@[m [m## GET /api/v1/categories[m
+ [m
+ ## GET /api/v1/tickets[m
+ [m
+[31m-Lista tickets. USER recebe somente os tickets que abriu. AGENT e ADMIN recebem tickets de todos os usuários.[m
+[32m+[m[32mLista tickets paginados, do mais recente para o mais antigo. USER recebe somente os tickets que abriu. AGENT e ADMIN recebem tickets de todos os usuários.[m
+[32m+[m
+[32m+[m[32mParâmetros de consulta (todos opcionais):[m
+[32m+[m
+[32m+[m[32m| Parâmetro | Regra | Descrição |[m
+[32m+[m[32m| --- | --- | --- |[m
+[32m+[m[32m| page | inteiro maior ou igual a 1 (padrão 1) | Página desejada |[m
+[32m+[m[32m| per_page | inteiro de 1 a 100 (padrão 15) | Itens por página |[m
+[32m+[m[32m| status | OPEN, IN_PROGRESS, WAITING ou CLOSED | Filtra por status |[m
+[32m+[m[32m| search | texto de até 100 caracteres | Busca no título, no nome da categoria e no nome do solicitante; se for só números, também no id |[m
+[32m+[m[32m| mine | 1 ou 0 | Com 1, AGENT e ADMIN veem só os próprios tickets. USER sempre vê só os seus |[m
+[32m+[m
+[32m+[m[32mExemplo: `GET /api/v1/tickets?page=2&per_page=10&status=OPEN&search=vpn&mine=1`[m
+ [m
+ Resposta 200:[m
+ [m
+[36m@@ -100,10 +113,49 @@[m [m## GET /api/v1/tickets[m
+           "title": "Computador não inicia",[m
+           "status": "OPEN"[m
+         }[m
+[31m-      ][m
+[32m+[m[32m      ],[m
+[32m+[m[32m      "links": {[m
+[32m+[m[32m        "first": "http://127.0.0.1:8000/api/v1/tickets?page=1",[m
+[32m+[m[32m        "last": "http://127.0.0.1:8000/api/v1/tickets?page=3",[m
+[32m+[m[32m        "prev": null,[m
+[32m+[m[32m        "next": "http://127.0.0.1:8000/api/v1/tickets?page=2"[m
+[32m+[m[32m      },[m
+[32m+[m[32m      "meta": {[m
+[32m+[m[32m        "current_page": 1,[m
+[32m+[m[32m        "from": 1,[m
+[32m+[m[32m        "last_page": 3,[m
+[32m+[m[32m        "per_page": 15,[m
+[32m+[m[32m        "to": 15,[m
+[32m+[m[32m        "total": 37[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32mSem resultados, data é um array vazio, meta.total é 0 e meta.from e meta.to são null.[m
+[32m+[m
+[32m+[m[32mRespostas de erro:[m
+[32m+[m
+[32m+[m[32m- 401: token ausente ou inválido.[m
+[32m+[m[32m- 422: parâmetro inválido (per_page fora de 1 a 100, status desconhecido, mine não booleano, search com mais de 100 caracteres).[m
+[32m+[m
+[32m+[m[32m## GET /api/v1/tickets/summary[m
+[32m+[m
+[32m+[m[32mTotais de tickets por status, usados pelos cards de resumo. Segue a mesma visibilidade da listagem: USER conta só os próprios; AGENT e ADMIN contam todos, ou só os próprios com `mine=1`.[m
+[32m+[m
+[32m+[m[32mResposta 200:[m
+[32m+[m
+[32m+[m[32m    {[m
+[32m+[m[32m      "data": {[m
+[32m+[m[32m        "total": 12,[m
+[32m+[m[32m        "by_status": {[m
+[32m+[m[32m          "OPEN": 5,[m
+[32m+[m[32m          "IN_PROGRESS": 3,[m
+[32m+[m[32m          "WAITING": 1,[m
+[32m+[m[32m          "CLOSED": 3[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+     }[m
+ [m
+[31m-Sem tickets, data é um array vazio.[m
+[32m+[m[32mTodos os status aparecem em by_status, com 0 quando não há tickets.[m
+ [m
+ Resposta de erro:[m
+ [m

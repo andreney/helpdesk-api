@@ -13,7 +13,8 @@ Todas as rotas, exceto POST /api/v1/login, exigem um token Sanctum no cabeçalho
 | POST | /api/v1/login | Não | Credenciais válidas |
 | POST | /api/v1/logout | Sim | Revoga o token usado na requisição |
 | GET | /api/v1/categories | Sim | Todos os perfis (somente categorias ativas) |
-| GET | /api/v1/tickets | Sim | USER vê os próprios; AGENT e ADMIN veem todos |
+| GET | /api/v1/tickets | Sim | USER vê os próprios; AGENT e ADMIN veem todos (paginado, com filtros) |
+| GET | /api/v1/tickets/summary | Sim | Mesma visibilidade da listagem |
 | POST | /api/v1/tickets | Sim | Todos os perfis |
 | GET | /api/v1/tickets/{ticket} | Sim | USER vê o próprio; AGENT e ADMIN veem qualquer |
 | PATCH | /api/v1/tickets/{ticket}/status | Sim | AGENT e ADMIN |
@@ -89,7 +90,19 @@ Respostas de erro:
 
 ## GET /api/v1/tickets
 
-Lista tickets. USER recebe somente os tickets que abriu. AGENT e ADMIN recebem tickets de todos os usuários.
+Lista tickets paginados, do mais recente para o mais antigo. USER recebe somente os tickets que abriu. AGENT e ADMIN recebem tickets de todos os usuários.
+
+Parâmetros de consulta (todos opcionais):
+
+| Parâmetro | Regra | Descrição |
+| --- | --- | --- |
+| page | inteiro maior ou igual a 1 (padrão 1) | Página desejada |
+| per_page | inteiro de 1 a 100 (padrão 15) | Itens por página |
+| status | OPEN, IN_PROGRESS, WAITING ou CLOSED | Filtra por status |
+| search | texto de até 100 caracteres | Busca no título, no nome da categoria e no nome do solicitante; se for só números, também no id |
+| mine | 1 ou 0 | Com 1, AGENT e ADMIN veem só os próprios tickets. USER sempre vê só os seus |
+
+Exemplo: `GET /api/v1/tickets?page=2&per_page=10&status=OPEN&search=vpn&mine=1`
 
 Resposta 200:
 
@@ -100,10 +113,49 @@ Resposta 200:
           "title": "Computador não inicia",
           "status": "OPEN"
         }
-      ]
+      ],
+      "links": {
+        "first": "http://127.0.0.1:8000/api/v1/tickets?page=1",
+        "last": "http://127.0.0.1:8000/api/v1/tickets?page=3",
+        "prev": null,
+        "next": "http://127.0.0.1:8000/api/v1/tickets?page=2"
+      },
+      "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 3,
+        "per_page": 15,
+        "to": 15,
+        "total": 37
+      }
     }
 
-Sem tickets, data é um array vazio.
+Sem resultados, data é um array vazio, meta.total é 0 e meta.from e meta.to são null.
+
+Respostas de erro:
+
+- 401: token ausente ou inválido.
+- 422: parâmetro inválido (per_page fora de 1 a 100, status desconhecido, mine não booleano, search com mais de 100 caracteres).
+
+## GET /api/v1/tickets/summary
+
+Totais de tickets por status, usados pelos cards de resumo. Segue a mesma visibilidade da listagem: USER conta só os próprios; AGENT e ADMIN contam todos, ou só os próprios com `mine=1`.
+
+Resposta 200:
+
+    {
+      "data": {
+        "total": 12,
+        "by_status": {
+          "OPEN": 5,
+          "IN_PROGRESS": 3,
+          "WAITING": 1,
+          "CLOSED": 3
+        }
+      }
+    }
+
+Todos os status aparecem em by_status, com 0 quando não há tickets.
 
 Resposta de erro:
 
