@@ -11,7 +11,8 @@ API REST de suporte construída com Laravel 13, PHP 8.4 e MySQL. A autenticaçã
 - Atribuição automática do responsável ao iniciar o atendimento.
 - Mensagens de validação em português (pt_BR).
 - Seeder de demonstração com um usuário por perfil, categorias e tickets.
-- Listagem: USER vê somente os próprios tickets; AGENT e ADMIN veem todos.
+- Listagem paginada (15 por página, até 100) com filtros por status, busca e "meus tickets"; USER vê somente os próprios tickets e AGENT e ADMIN veem todos.
+- Resumo de tickets por status (`GET /api/v1/tickets/summary`).
 - Visualização: USER vê somente os próprios tickets; AGENT e ADMIN podem ver qualquer ticket.
 - Alteração de status por AGENT e ADMIN, respeitando a matriz de transições.
 - Comentários: USER comenta somente nos próprios tickets; AGENT e ADMIN podem comentar em qualquer ticket.
@@ -35,6 +36,7 @@ Ao encerrar um ticket, closed_at é preenchido. Nas demais transições permitid
 | POST | /api/v1/login | Público |
 | GET | /api/v1/categories | Autenticado |
 | GET | /api/v1/tickets | Autenticado |
+| GET | /api/v1/tickets/summary | Autenticado |
 | POST | /api/v1/tickets | Autenticado |
 | GET | /api/v1/tickets/{ticket} | Autenticado e autorizado pela policy |
 | PATCH | /api/v1/tickets/{ticket}/status | ADMIN ou AGENT |
@@ -54,7 +56,7 @@ Para executar:
 
 - Edição e exclusão de tickets não possuem rotas.
 - Não há endpoints de administração de categorias ou usuários.
-- Reatribuição manual de agente e filtros/paginação da listagem ainda não estão disponíveis.
+- Reatribuição manual de agente ainda não está disponível.
 
 ## Documentos relacionados
 

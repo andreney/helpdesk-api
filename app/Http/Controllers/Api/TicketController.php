@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ListTicketsRequest;
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketStatusRequest;
 use App\Http\Resources\TicketResource;
@@ -37,12 +38,18 @@ class TicketController extends Controller
     /**
      * Lista os tickets.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(ListTicketsRequest $request): AnonymousResourceCollection
     {
         Gate::authorize('viewAny', Ticket::class);
 
-        $tickets = $this->ticketService->getAll(
-            $request->user()
+        $tickets = $this->ticketService->getPaginated(
+            $request->user(),
+            [
+                'status' => $request->validated('status'),
+                'search' => $request->validated('search'),
+                'mine' => $request->boolean('mine'),
+            ],
+            $request->integer('per_page', 15)
         );
 
         return TicketResource::collection($tickets);
@@ -79,5 +86,20 @@ class TicketController extends Controller
         );
 
         return new TicketResource($ticket);
+    }
+
+    /**
+     * Contagem de tickets por status, para os cards de resumo.
+     */
+    public function summary(Request $request): JsonResponse
+    {
+        Gate::authorize('viewAny', Ticket::class);
+
+        return response()->json([
+            'data' => $this->ticketService->getSummary(
+                $request->user(),
+                $request->boolean('mine')
+            ),
+        ]);
     }
 }

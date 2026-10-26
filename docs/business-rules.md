@@ -33,6 +33,14 @@ Categorias relacionadas a tickets devem ser desativadas em vez de removidas, par
 - O usuário solicitante é obtido da autenticação, não do payload.
 - O histórico de comentários pertence ao ticket e deve ser preservado.
 
+## Listagem
+
+- USER lista somente os tickets que abriu; AGENT e ADMIN listam todos, ou só os próprios com `mine=1`.
+- A listagem é paginada: 15 itens por padrão, no máximo 100 por página.
+- Os tickets vêm do mais recente para o mais antigo (o id desempata, para a paginação ser estável).
+- O filtro `status` aceita apenas os status do ciclo de vida; `search` procura no título, na categoria e no solicitante.
+- O resumo por status (`/tickets/summary`) segue a mesma visibilidade da listagem.
+
 ## Ciclo de status
 
 A API aceita os seguintes status e transições:
