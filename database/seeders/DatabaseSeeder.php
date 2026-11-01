@@ -115,7 +115,7 @@ class DatabaseSeeder extends Seeder
                 [$requester, 'Funcionando, obrigada!'],
             ]],
             [$requester, 'Hardware', 'Troca de mouse', 'O botão esquerdo do mouse não responde.', TicketPriority::LOW, TicketStatus::CLOSED, $agent, 14, []],
-                        [$requester, 'Hardware', 'Teclado com teclas falhando', 'Algumas teclas não respondem ao digitar.', TicketPriority::LOW, TicketStatus::OPEN, null, 15, []],
+            [$requester, 'Hardware', 'Teclado com teclas falhando', 'Algumas teclas não respondem ao digitar.', TicketPriority::LOW, TicketStatus::OPEN, null, 15, []],
             [$requester, 'Acesso e senhas', 'Solicitação de acesso ao ERP', 'Preciso de acesso ao módulo financeiro.', TicketPriority::MEDIUM, TicketStatus::OPEN, null, 16, []],
             [$requester, 'Software', 'E-mail não sincroniza no celular', 'O aplicativo para de atualizar após algumas horas.', TicketPriority::MEDIUM, TicketStatus::OPEN, null, 17, []],
             [$requester, 'Rede e internet', 'Wi-Fi instável na sala de reuniões', 'A conexão cai durante as videochamadas.', TicketPriority::HIGH, TicketStatus::OPEN, null, 18, []],
