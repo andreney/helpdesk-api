@@ -109,6 +109,14 @@ A API ficará disponível em **http://127.0.0.1:8000**.
 
 Exemplo do fluxo básico com os dados do seeder: autenticar, escolher uma categoria e abrir um ticket.
 
+## 🖥️ Frontend
+
+A interface em React está em [helpdesk-frontend](https://github.com/andreney/helpdesk-frontend).
+
+![Painel de chamados](docs/screenshots/dashboard.png)
+
+Para ver tudo funcionando: rode `php artisan migrate --seed`, suba a API com `php artisan serve` e siga o README do frontend (`VITE_API_BASE_URL=/api/v1`).
+
 **Login**
 
 ```bash

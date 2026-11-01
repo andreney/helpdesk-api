@@ -115,6 +115,20 @@ class DatabaseSeeder extends Seeder
                 [$requester, 'Funcionando, obrigada!'],
             ]],
             [$requester, 'Hardware', 'Troca de mouse', 'O botão esquerdo do mouse não responde.', TicketPriority::LOW, TicketStatus::CLOSED, $agent, 14, []],
+                        [$requester, 'Hardware', 'Teclado com teclas falhando', 'Algumas teclas não respondem ao digitar.', TicketPriority::LOW, TicketStatus::OPEN, null, 15, []],
+            [$requester, 'Acesso e senhas', 'Solicitação de acesso ao ERP', 'Preciso de acesso ao módulo financeiro.', TicketPriority::MEDIUM, TicketStatus::OPEN, null, 16, []],
+            [$requester, 'Software', 'E-mail não sincroniza no celular', 'O aplicativo para de atualizar após algumas horas.', TicketPriority::MEDIUM, TicketStatus::OPEN, null, 17, []],
+            [$requester, 'Rede e internet', 'Wi-Fi instável na sala de reuniões', 'A conexão cai durante as videochamadas.', TicketPriority::HIGH, TicketStatus::OPEN, null, 18, []],
+            [$requester, 'Acesso e senhas', 'Redefinir a senha da VPN', 'Esqueci a senha e o link de recuperação expirou.', TicketPriority::MEDIUM, TicketStatus::CLOSED, $agent, 19, []],
+            [$requester, 'Software', 'Instalar o Office no notebook novo', 'O notebook foi entregue sem o pacote instalado.', TicketPriority::LOW, TicketStatus::CLOSED, $agent, 20, []],
+            [$requester, 'Hardware', 'Monitor sem imagem após queda de energia', 'O monitor liga, mas a tela fica preta.', TicketPriority::HIGH, TicketStatus::IN_PROGRESS, $agent, 21, []],
+            [$requester, 'Software', 'Planilha compartilhada não abre', 'Aparece erro de arquivo bloqueado para edição.', TicketPriority::MEDIUM, TicketStatus::WAITING, $agent, 22, []],
+            [$admin, 'Software', 'Backup do notebook antes da formatação', 'Preciso salvar os arquivos antes da troca de sistema.', TicketPriority::LOW, TicketStatus::OPEN, null, 23, []],
+            [$requester, 'Acesso e senhas', 'Cadastro de novo colaborador', 'Criar e-mail e acessos para quem começa na segunda.', TicketPriority::MEDIUM, TicketStatus::OPEN, null, 24, []],
+            [$requester, 'Rede e internet', 'Ponto de rede sem conexão', 'A tomada da mesa 12 não entrega sinal.', TicketPriority::HIGH, TicketStatus::OPEN, null, 25, []],
+            [$requester, 'Software', 'Licença do antivírus expirando', 'O aviso de renovação aparece todos os dias.', TicketPriority::MEDIUM, TicketStatus::OPEN, null, 26, []],
+            [$requester, 'Hardware', 'Webcam não é reconhecida', 'O sistema não detecta a câmera nas reuniões.', TicketPriority::LOW, TicketStatus::OPEN, null, 27, []],
+            [$requester, 'Rede e internet', 'Acesso negado à impressora de rede', 'Aparece erro de permissão ao imprimir.', TicketPriority::MEDIUM, TicketStatus::CLOSED, $agent, 28, []],
         ];
 
         foreach ($tickets as [$owner, $category, $title, $description, $priority, $status, $assignee, $daysAgo, $comments]) {
